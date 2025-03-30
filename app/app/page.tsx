@@ -1,17 +1,22 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, ChangeEvent } from "react";
 import { Tab } from "@headlessui/react";
 
+interface Tool {
+  name: string;
+  description: string;
+}
+
 export default function Home() {
-  const [tools, setTools] = useState([]);
-  const [textPrompt, setTextPrompt] = useState("");
-  const [imagePrompt, setImagePrompt] = useState("");
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState("");
-  const [result, setResult] = useState("");
-  const [loading, setLoading] = useState(false);
-  const fileInputRef = useRef(null);
+  const [tools, setTools] = useState<Tool[]>([]);
+  const [textPrompt, setTextPrompt] = useState<string>("");
+  const [imagePrompt, setImagePrompt] = useState<string>("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [result, setResult] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Fetch available MCP tools when the component mounts
@@ -30,13 +35,13 @@ export default function Home() {
     fetchMcpData();
   }, []);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       setSelectedImage(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result);
+        setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -68,7 +73,7 @@ export default function Home() {
       const reader = new FileReader();
       reader.readAsDataURL(selectedImage);
       reader.onloadend = async () => {
-        const base64Data = reader.result.split(",")[1];
+        const base64Data = (reader.result as string).split(",")[1];
         const response = await fetch("/api/gemini-analyze-image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -76,11 +81,11 @@ export default function Home() {
         });
         const data = await response.json();
         setResult(data.result);
-        setLoading(false);
       };
     } catch (error) {
       console.error("Error analyzing image:", error);
       setResult("Error: Failed to analyze image");
+    } finally {
       setLoading(false);
     }
   };
@@ -152,7 +157,7 @@ export default function Home() {
                   className="hidden"
                 />
                 <button
-                  onClick={() => fileInputRef.current.click()}
+                  onClick={() => fileInputRef.current?.click()}
                   className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md font-medium transition-colors"
                 >
                   Select Image
