@@ -33,7 +33,7 @@ app.add_middleware(
 )
 
 # Basic API endpoints
-@app.get("/api/health")
+@app.get("/api/ping")
 async def health_check():
     return {"status": "ok", "service": "NextJS-FastAPI-MCP-Gemini Integration"}
 
